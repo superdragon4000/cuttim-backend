@@ -12,7 +12,7 @@ export class UsersController {
 
   @Post('create')
   @HttpCode(HttpStatus.CREATED)
-  createUser(@Body() createUserDto: CreateUserDto): Promise<User | HttpStatus> {
+  createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
     return this.usersService.create(createUserDto);
   }
 

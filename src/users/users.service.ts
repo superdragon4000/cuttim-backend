@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import User, { UserRole } from '../model/user.entity';
 import { Equal, Repository } from 'typeorm';
@@ -12,7 +12,7 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User | HttpStatus> {
+  async create(createUserDto: CreateUserDto): Promise<User> {
     const candidate = await this.findByEmail(createUserDto.email);
     if (candidate) throw new HttpException('Email address is already in use', HttpStatus.CONFLICT);
 
@@ -24,9 +24,19 @@ export class UsersService {
     })
   }
 
-  async findByEmail(email: string): Promise<User | null> {
-    return await this.usersRepository.findOneBy({
+  async findByEmail(email: string): Promise<User> {
+    const user = await this.usersRepository.findOneBy({
       email: Equal(email),
     });
+    if (!user) throw new NotFoundException('User not found');
+    return user;
+  }
+
+  async findUserById(id: number): Promise<User> {
+    const user = await this.usersRepository.findOneBy({
+      id: Equal(id),
+    });
+    if (!user) throw new NotFoundException('User not found');
+    return user;
   }
 }

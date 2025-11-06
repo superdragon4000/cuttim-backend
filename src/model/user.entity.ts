@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { BaseEntity } from './base.entity';
+import Order from './order.entity';
 
 export enum UserRole {
   CLIENT = 'client',
@@ -29,6 +30,9 @@ class User extends BaseEntity {
 
   @Column({ nullable: true })
   name: string;
+
+  @OneToMany(() => Order, (order) => order.user)
+  orders: Order[];
 }
 
 export default User;
