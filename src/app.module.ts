@@ -4,6 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { OrdersModule } from './orders/orders.module';
+import { FilesModule } from './files/files.module';
+import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
   imports: [
@@ -28,9 +30,14 @@ import { OrdersModule } from './orders/orders.module';
         entities: [`${__dirname}/model/*.entity.{ts,js}`],
       }),
     }),
+    MulterModule.register({
+      dest: './uploads',
+      limits: { fileSize: 5 * 1024 * 1024 }, // Ограничение размера файла до 5 МБ
+    }),
     AuthModule,
     UsersModule,
     OrdersModule,
+    FilesModule,
   ],
   controllers: [],
   providers: [],
