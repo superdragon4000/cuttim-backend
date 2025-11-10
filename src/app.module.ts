@@ -6,6 +6,7 @@ import { UsersModule } from './users/users.module';
 import { OrdersModule } from './orders/orders.module';
 import { FilesModule } from './files/files.module';
 import { MulterModule } from '@nestjs/platform-express';
+import { MaterialsModule } from './materials/materials.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { MulterModule } from '@nestjs/platform-express';
     UsersModule,
     OrdersModule,
     FilesModule,
+    MaterialsModule,
   ],
   controllers: [],
   providers: [],
