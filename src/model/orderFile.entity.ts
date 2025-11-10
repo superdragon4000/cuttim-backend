@@ -2,26 +2,21 @@ import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import Order from './order.entity';
 import Material from './material.entity';
+import File from './file.entity';
 
 @Entity()
 class OrderFile extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  fileName: string;
+  @ManyToOne(() => File)
+  file: File;
 
-  @Column()
-  fileUrl: string;
-
-  @Column({ type: 'json', nullable: true })
-  dxfMetadata: Record<string, any>;
+  @ManyToOne(() => Material, (material) => material.orderFiles)
+  material: Material;
 
   @Column({ type: 'int' })
-  quantity: number; // сколько штук этого файла заказано
-
-  @ManyToOne(() => Material, (material) => material.files)
-  material: Material;
+  quantity: number;
 
   @Column({ type: 'float', nullable: true })
   calculatedPrice: number;
@@ -29,5 +24,6 @@ class OrderFile extends BaseEntity {
   @ManyToOne(() => Order, (order) => order.files)
   order: Order;
 }
+
 
 export default OrderFile;

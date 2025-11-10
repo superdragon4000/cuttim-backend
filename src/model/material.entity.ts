@@ -28,8 +28,8 @@ class Material extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   description: string;
 
-  @OneToMany(() => OrderFile, (file) => file.material)
-  files: OrderFile[];
+  @OneToMany(() => OrderFile, (orderFile) => orderFile.material)
+  orderFiles: OrderFile[];
 }
 
 export default Material;

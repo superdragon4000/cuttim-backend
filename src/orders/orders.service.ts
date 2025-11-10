@@ -56,4 +56,19 @@ export class OrdersService {
       order: { [orderField]: direction },
     });
   }
+
+  async findOrderFile(orderId: number, fileId: number) {
+    const order = await this.ordersRepository.findOne({
+      where: { id: Equal(orderId) },
+      relations: ['files'],
+    });
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+    const orderFile = order.files.find(file => file.id === fileId);
+    if (!orderFile) {
+      throw new NotFoundException('File not found');
+    }
+    return orderFile;
+  }
 }

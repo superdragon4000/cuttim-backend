@@ -1,18 +1,32 @@
 import {
   Controller,
+  Get,
+  NotFoundException,
+  Param,
   Post,
+  Res,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FilesService } from './files.service';
 import { diskStorage } from 'multer';
-import { extname } from 'path';
+import path, { extname, join } from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import type { Response } from 'express';
+import { JwtAuthGuard } from '../auth/guards/access-token.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 
 @Controller('files')
 export class FilesController {
-  constructor(private readonly filesService: FilesService) {}
+  constructor(
+    private readonly filesService: FilesService,
+  ) {}
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('client')
   @Post('upload')
   @UseInterceptors(
     FileInterceptor('file', {
@@ -20,7 +34,6 @@ export class FilesController {
         destination: './uploads',
         filename: (req, file, cb) => {
           const ext = extname(file.originalname);
-          // Генерируем UUID
           const filename = `${uuidv4()}${ext}`;
           cb(null, filename);
         },
@@ -35,5 +48,19 @@ export class FilesController {
   )
   uploadFile(@UploadedFile() file: Express.Multer.File) {
     return this.filesService.uploadFile(file);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('manager')
+  @Get(':fileId/download')
+  async downloadFile(
+    @Param('fileId') fileId: number,
+    @Res() res: Response,
+  ) {
+    const file =  await this.filesService.findFileById(fileId);
+    if (!file) {
+      throw new NotFoundException('File not found');
+    }
+    res.download(path.join(__dirname, '..', '..', file.fileUrl), file.originalName);
   }
 }
