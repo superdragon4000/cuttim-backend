@@ -16,6 +16,9 @@ class Material extends BaseEntity {
   @Column()
   name: string; // например, "Steel"
 
+  @Column()
+  type: string; // например, "6061-T6"
+
   @Column({ type: 'float' })
   thickness: number;
 
@@ -23,7 +26,7 @@ class Material extends BaseEntity {
   unit: ThicknessUnit;
 
   @Column({ type: 'float' })
-  pricePerUnit: number;
+  pricePerSquareMm: number;
 
   @Column({ type: 'text', nullable: true })
   description: string;

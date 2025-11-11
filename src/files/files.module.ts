@@ -9,5 +9,6 @@ import { OrdersModule } from '../orders/orders.module';
   imports: [TypeOrmModule.forFeature([File])],
   controllers: [FilesController],
   providers: [FilesService],
+  exports: [FilesService],
 })
 export class FilesModule {}

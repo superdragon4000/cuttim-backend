@@ -1,8 +1,29 @@
-import { IsEnum, IsOptional } from 'class-validator';
+import {
+  IsEnum,
+  IsInt,
+  IsOptional,
+  Min,
+  ValidateNested,
+} from 'class-validator';
 import { OrderType } from '../../model/order.entity';
+import { Type } from 'class-transformer';
+
+export class CreateOrderFilesDto {
+  @IsInt()
+  fileId: number;
+
+  @IsInt()
+  materialId: number;
+
+  @IsInt()
+  @Min(1)
+  quantity: number;
+}
 
 export class CreateOrderDto {
-  // Define properties needed to create an order
+  @ValidateNested({ each: true })
+  @Type(() => CreateOrderFilesDto)
+  files: CreateOrderFilesDto[];
   @IsOptional()
   comment?: string;
 

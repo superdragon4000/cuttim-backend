@@ -47,7 +47,7 @@ class Order extends BaseEntity {
   @Column({ type: 'timestamp', nullable: true })
   trackingAssignedAt: Date;
 
-  @Column({ nullable: true })
+  @Column({type: 'float', nullable: true })
   totalPrice: number;
 
   @Column({ type: 'timestamp', nullable: true })

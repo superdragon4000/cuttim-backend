@@ -11,6 +11,13 @@ export class AddMaterialDto {
   name: string;
 
   @ApiProperty({
+    description: 'Тип материала',
+    example: '6061-T6',
+  })
+  @IsString()
+  type: string;
+
+  @ApiProperty({
     description: 'Толщина материала',
     example: 2.5,
   })
@@ -32,7 +39,7 @@ export class AddMaterialDto {
   })
   @IsNumber()
   @Min(0)
-  pricePerUnit: number;
+  pricePerSquareMm: number;
 
   @ApiProperty({
     description: 'Описание материала',
