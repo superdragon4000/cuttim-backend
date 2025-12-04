@@ -8,6 +8,7 @@ import { FilesModule } from './files/files.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { MaterialsModule } from './materials/materials.module';
 import { PricingModule } from './pricing/pricing.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { PricingModule } from './pricing/pricing.module';
     FilesModule,
     MaterialsModule,
     PricingModule,
+    PaymentsModule,
   ],
   controllers: [],
   providers: [],

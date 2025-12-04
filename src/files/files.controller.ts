@@ -25,8 +25,8 @@ export class FilesController {
     private readonly filesService: FilesService,
   ) {}
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('client')
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // @Roles('client')
   @Post('upload')
   @UseInterceptors(
     FileInterceptor('file', {
