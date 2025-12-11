@@ -9,6 +9,7 @@ import { MulterModule } from '@nestjs/platform-express';
 import { MaterialsModule } from './materials/materials.module';
 import { PricingModule } from './pricing/pricing.module';
 import { PaymentsModule } from './payments/payments.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { PaymentsModule } from './payments/payments.module';
     MaterialsModule,
     PricingModule,
     PaymentsModule,
+    NotificationsModule,
   ],
   controllers: [],
   providers: [],

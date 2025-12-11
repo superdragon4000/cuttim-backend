@@ -1,14 +1,23 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import User from '../model/user.entity';
 import ChangePasswordDto from './dto/change-password.dto';
+import { NotificationsService } from '../notifications/notifications.service';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
+    private notificationsService: NotificationsService,
     @Inject('JWT_ACCESS_SERVICE') private accessJwt: JwtService,
     @Inject('JWT_REFRESH_SERVICE') private refreshJwt: JwtService,
   ) {}
@@ -70,8 +79,65 @@ export class AuthService {
       throw new UnauthorizedException('Old password is incorrect');
     }
 
-    const hashedNewPassword = await bcrypt.hash(changePasswordDto.newPassword, 10);
+    const hashedNewPassword = await bcrypt.hash(
+      changePasswordDto.newPassword,
+      10,
+    );
     existingUser.password = hashedNewPassword;
-    return await this.usersService.updateUser(existingUser, { password: hashedNewPassword });
+    return await this.usersService.updateUser(existingUser, {
+      password: hashedNewPassword,
+    });
+  }
+
+  async sendVerificationEmail(user: User) {
+    // todo Rate limiting, check lastVerificationEmailSentAt
+    const dbUser = await this.usersService.findUserById(user.id);
+
+    if (dbUser.isEmailVerified) throw new ConflictException('Email is already verified');
+    const token = uuidv4();
+    await this.usersService.attachVerificationToken(user.id, token);
+    const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
+    const message = `Please verify your email by clicking the following link: ${verificationLink}`;
+    const result = await this.notificationsService.send({
+      to: user.email,
+      subject: 'Email Verification',
+      message,
+      channel: 'sendGrid',
+    });
+
+    if (!('success' in result) || !result.success)
+      throw new InternalServerErrorException(
+        'Failed to send verification email',
+      );
+
+    return { message: 'Email verification sent' };
+  }
+
+  async verifyEmailToken(user: User, token: string): Promise<any> {
+    const dbUser = await this.usersService.findUserById(user.id);
+
+    if (
+      !dbUser.emailVerificationToken ||
+      dbUser.emailVerificationToken !== token
+    ) {
+      throw new ConflictException('Invalid token');
+    }
+
+    const issuedAt = dbUser.emailVerificationTokenIssuedAt;
+    const ttlMs = 24 * 60 * 60 * 1000; // 24 часа
+    
+    if (!issuedAt) {
+      throw new ConflictException('Token issued timestamp is missing');
+    }
+
+    const expired = Date.now() - issuedAt.getTime() > ttlMs;
+
+    if (expired) {
+      throw new ConflictException('Token expired');
+    }
+
+    await this.usersService.markEmailVerified(dbUser.id);
+    await this.usersService.clearEmailToken(dbUser.id);
+    return { message: 'Email verified successfully' };
   }
 }

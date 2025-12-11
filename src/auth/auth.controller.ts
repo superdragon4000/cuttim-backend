@@ -5,6 +5,7 @@ import {
   Headers,
   Patch,
   Post,
+  Query,
   Res,
   UnauthorizedException,
   UseGuards,
@@ -64,7 +65,7 @@ export class AuthController {
       await this.authService.issueTokens(user);
 
     // @ts-ignore
-    const maxAge = ms(this.config.get<string>('REFRESH_TOKEN_EXPIRES_IN') || '1h');
+    const maxAge = ms(this.config.get<string>('REFRESH_TOKEN_EXPIRES_IN') || '1h',);
 
     res.cookie('refresh-token', refresh_token, {
       httpOnly: true,
@@ -176,5 +177,30 @@ export class AuthController {
     });
 
     return { message: 'Password changed successfully. Please log in again.' };
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('client')
+  @Post('send-verification-email')
+  @ApiOperation({ summary: 'Send verification email to user' })
+  @ApiResponse({ status: 200, description: 'Verification email sent' })
+  @ApiResponse({ status: 400, description: 'Email is already verified' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({
+    status: 500,
+    description: 'Failed to send verification email',
+  })
+  async sendVerificationEmail(@CurrentUser() user: User) {
+    return await this.authService.sendVerificationEmail(user);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('client')
+  @Get('verify-email')
+  @ApiOperation({ summary: 'Verify user email with token' })
+  @ApiResponse({ status: 200, description: 'Email verified successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid or expired token' })
+  async verifyEmail(@CurrentUser() user: User, @Query('token') token: string) {
+    return await this.authService.verifyEmailToken(user, token);
   }
 }

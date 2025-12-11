@@ -54,4 +54,29 @@ export class UsersService {
   async updateUser(user: User, data): Promise<User> {
     return await this.usersRepository.save({ ...user, ...data });
   }
+
+  async isVerified(userId: number): Promise<boolean> {
+    const user = await this.findUserById(userId);
+    return user.isEmailVerified;
+  }
+
+  async attachVerificationToken(userId: number, token: string) {
+    const user = await this.findUserById(userId);
+    user.emailVerificationToken = token;
+    user.emailVerificationTokenIssuedAt = new Date();
+    await this.usersRepository.save(user);
+  }
+
+  async markEmailVerified(userId: number) {
+    const user = await this.findUserById(userId);
+    user.isEmailVerified = true;
+    await this.usersRepository.save(user);
+  }
+
+  async clearEmailToken(userId: number) {
+    const user = await this.findUserById(userId);
+    user.emailVerificationToken = null;
+    user.emailVerificationTokenIssuedAt = null;
+    await this.usersRepository.save(user);
+  }
 }

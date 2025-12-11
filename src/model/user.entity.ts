@@ -33,6 +33,18 @@ class User extends BaseEntity {
 
   @OneToMany(() => Order, (order) => order.user)
   orders: Order[];
+
+  @Column({ default: false })
+  isEmailVerified: boolean;
+
+  @Column({ nullable: true })
+  emailVerificationToken: string | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  emailVerificationTokenIssuedAt: Date | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  lastVerificationEmailSentAt: Date | null;
 }
 
 export default User;
