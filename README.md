@@ -9,6 +9,70 @@ The architecture follows modular design principles, with clear separation of con
 
 ## 💼 Business Logic
 
+### 1. File Upload & Quote
+- User uploads a **DXF file** containing the design.
+- Backend parses the file and calculates the **bounding box dimensions**.
+- User selects:
+  - Material type (e.g., steel, aluminum, acrylic).
+  - Quantity of parts.
+- System generates a **quote**:
+  - Price is calculated based on bounding box size, material, and quantity.
+  - Quote is shown to the user before order creation.
+
+### 2. Order Creation
+- If the user accepts the quote, they proceed to create an **order**.
+- User provides:
+  - Shipping address (required for fulfillment).
+  - Contact details.
+- Order is stored with status `pending`.
+
+### 3. Payment
+- User pays for the order via integrated payment gateway.
+- Backend tracks **payment status**:
+  - `pending` → `paid` → `failed`.
+- Only **paid orders** move forward to manufacturing.
+
+### 4. Manufacturing Workflow
+- Manager accesses the **admin panel**.
+- Manager sees all orders with their DXF files and details.
+- Manager downloads DXF files and sends them to **laser cutting machines**.
+- Manager updates order status:
+  - `manufacturing` → `shipped`.
+
+### 5. Shipping & Tracking
+- Once fabrication is complete, the order is marked as `shipped`.
+- Manager assigns a **tracking number** to the shipment.
+- User can view the **order timeline**:
+  - Quote accepted.
+  - Order created.
+  - Payment confirmed.
+  - Manufacturing started.
+  - Shipped with tracking number.
+
+---
+
+## 📦 Roles & Responsibilities
+
+### Clients
+- Upload DXF files.
+- Select material and quantity.
+- Receive instant quote.
+- Create orders, provide shipping address, and pay.
+- Track order status and shipment timeline.
+
+### Managers
+- Access admin panel to view all orders.
+- Download DXF files for production.
+- Update order statuses (`manufacturing`, `shipped`).
+- Assign tracking numbers for shipments.
+
+---
+
+## 🚀 Flow Summary
+1. **DXF Upload → Quote → Order → Payment → Manufacturing → Shipping → Tracking**
+2. Clients interact with the frontend to place and track orders.
+3. Managers interact with the admin panel to fulfill and update orders.
+
 ### Authentication & Users
 - **JWT-based authentication** with role guards (`client`, `manager`, `admin`).
 - **Email verification flow**:
