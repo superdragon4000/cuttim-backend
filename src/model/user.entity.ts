@@ -37,7 +37,7 @@ class User extends BaseEntity {
   @Column({ default: false })
   isEmailVerified: boolean;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   emailVerificationToken: string | null;
 
   @Column({ type: 'timestamp', nullable: true })

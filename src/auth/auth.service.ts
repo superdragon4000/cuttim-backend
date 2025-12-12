@@ -116,6 +116,10 @@ export class AuthService {
   async verifyEmailToken(user: User, token: string): Promise<any> {
     const dbUser = await this.usersService.findUserById(user.id);
 
+    if (dbUser.isEmailVerified) {
+      throw new ConflictException('Email is already verified');
+    }
+
     if (
       !dbUser.emailVerificationToken ||
       dbUser.emailVerificationToken !== token

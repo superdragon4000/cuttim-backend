@@ -1,6 +1,6 @@
 // src/notifications/providers/sendgrid.provider.ts
 import { Injectable } from '@nestjs/common';
-import * as sgMail from '@sendgrid/mail';
+import sgMail from '@sendgrid/mail'
 import { NotificationPayload } from '../interfaces/notification.payload';
 
 @Injectable()
