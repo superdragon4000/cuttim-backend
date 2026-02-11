@@ -18,9 +18,21 @@ export enum OrderStatus {
   CANCELED = 'canceled',
 }
 
+export enum PaymentStatus {
+  PENDING = 'pending',
+  PAID = 'paid',
+  FAILED = 'failed',
+}
+
 export enum OrderType {
   LASER = 'laser',
   THREE_D = '3d',
+}
+
+export enum ShippingMethod {
+  PICKUP = 'pickup',
+  COURIER = 'courier',
+  EXPRESS = 'express',
 }
 
 @Entity()
@@ -34,12 +46,53 @@ class Order extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   comment: string;
 
+  @Column({ type: 'text', nullable: true })
+  recipientName: string;
+
+  @Column({ type: 'text', nullable: true })
+  recipientPhone: string;
+
+  @Column({ type: 'text', nullable: true })
+  shippingCountry: string;
+
+  @Column({ type: 'text', nullable: true })
+  shippingCity: string;
+
+  @Column({ type: 'text', nullable: true })
+  shippingAddressLine1: string;
+
+  @Column({ type: 'text', nullable: true })
+  shippingAddressLine2: string;
+
+  @Column({ type: 'text', nullable: true })
+  shippingPostalCode: string;
+
+  @Column({
+    type: 'enum',
+    enum: ShippingMethod,
+    default: ShippingMethod.COURIER,
+  })
+  shippingMethod: ShippingMethod;
+
+  @Column({ type: 'float', default: 0 })
+  shippingCost: number;
+
+  @Column({ type: 'varchar', default: 'RUB' })
+  currency: string;
+
   @Column({
     type: 'enum',
     enum: OrderStatus,
     default: OrderStatus.PENDING,
   })
   status: OrderStatus;
+
+  @Column({
+    type: 'enum',
+    enum: PaymentStatus,
+    default: PaymentStatus.PENDING,
+  })
+  paymentStatus: PaymentStatus;
 
   @Column({ nullable: true })
   trackingNumber: string;

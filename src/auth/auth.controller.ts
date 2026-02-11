@@ -203,4 +203,29 @@ export class AuthController {
   async verifyEmail(@CurrentUser() user: User, @Query('token') token: string) {
     return await this.authService.verifyEmailToken(user, token);
   }
+
+  @Post('forgot-password')
+  @ApiOperation({ summary: 'Initiate forgot password process' })
+  @ApiResponse({ description: 'Password reset email sent' })
+  async forgotPassword(@Body('email') email: string) {
+    return await this.authService.initiateForgotPassword(email);
+  }
+
+  @Post('reset-password')
+  @ApiOperation({ summary: 'Reset password using token' })
+  @ApiResponse({ description: 'Password has been reset successfully' })
+  async resetPassword(
+    @Body('token') token: string,
+    @Body('newPassword') newPassword: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    await this.authService.resetPassword(token, newPassword);
+    res.clearCookie('refresh-token', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+    });
+
+    return { message: 'Password changed successfully. Please log in again.' };
+  }
 }

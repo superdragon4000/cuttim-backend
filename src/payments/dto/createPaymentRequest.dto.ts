@@ -1,12 +1,10 @@
-import { IsNumber, IsString } from 'class-validator';
+import { IsInt, IsOptional, IsString } from 'class-validator';
 
 export class CreatePaymentRequestDto {
-  @IsNumber()
-  value: number;
+  @IsInt()
+  orderId: number;
 
+  @IsOptional()
   @IsString()
-  orderId: string;
-
-  @IsString()
-  userId: string;
+  returnUrl?: string;
 }

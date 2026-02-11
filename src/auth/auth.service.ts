@@ -93,7 +93,8 @@ export class AuthService {
     // todo Rate limiting, check lastVerificationEmailSentAt
     const dbUser = await this.usersService.findUserById(user.id);
 
-    if (dbUser.isEmailVerified) throw new ConflictException('Email is already verified');
+    if (dbUser.isEmailVerified)
+      throw new ConflictException('Email is already verified');
     const token = uuidv4();
     await this.usersService.attachVerificationToken(user.id, token);
     const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
@@ -129,7 +130,7 @@ export class AuthService {
 
     const issuedAt = dbUser.emailVerificationTokenIssuedAt;
     const ttlMs = 24 * 60 * 60 * 1000; // 24 часа
-    
+
     if (!issuedAt) {
       throw new ConflictException('Token issued timestamp is missing');
     }
@@ -143,5 +144,83 @@ export class AuthService {
     await this.usersService.markEmailVerified(dbUser.id);
     await this.usersService.clearEmailToken(dbUser.id);
     return { message: 'Email verified successfully' };
+  }
+
+  async initiateForgotPassword(email: string) {
+    const user = await this.usersService.findByEmail(email);
+    if (!user) {
+      return {
+        message:
+          'If an account with that email exists, a password reset email has been sent.',
+      };
+    }
+
+    const rawToken = uuidv4();
+    const hashedToken = await bcrypt.hash(rawToken, 10);
+
+    await this.usersService.attachPasswordResetToken(user.id, hashedToken);
+
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${rawToken}`;
+    const message = `You can reset your password by clicking the following link: ${resetLink}`;
+
+    const result = await this.notificationsService.send({
+      to: user.email,
+      subject: 'Password Reset',
+      message,
+      channel: 'sendGrid',
+    });
+
+    if (!('success' in result) || !result.success) {
+      throw new InternalServerErrorException(
+        'Failed to send password reset email',
+      );
+    }
+
+    return {
+      message:
+        'If an account with that email exists, a password reset email has been sent.',
+    };
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+
+
+
+// !! bug - token is raw, but in db is hashed
+    const user = await this.usersService.findOneByResetToken(token);
+
+
+
+
+
+    if (!user) {
+      throw new ConflictException('Invalid token');
+    }
+
+    const issuedAt = user.passwordResetTokenIssuedAt;
+    const ttlMs = 1 * 60 * 60 * 1000; // 1 час
+
+    if (!issuedAt) {
+      throw new ConflictException('Token issued timestamp is missing');
+    }
+
+    const expired = Date.now() - issuedAt.getTime() > ttlMs;
+    if (expired) {
+      throw new ConflictException('Token expired');
+    }
+
+    const isValid = await bcrypt.compare(token, user.passwordResetToken);
+    if (!isValid) {
+      throw new ConflictException('Invalid token');
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    await this.usersService.updateUser(user, {
+      password: hashedNewPassword,
+      passwordResetToken: null,
+      passwordResetTokenIssuedAt: null,
+    });
+
+    return { message: 'Password has been reset successfully' };
   }
 }

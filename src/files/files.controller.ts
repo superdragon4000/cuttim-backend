@@ -3,6 +3,7 @@ import {
   Get,
   NotFoundException,
   Param,
+  ParseIntPipe,
   Post,
   Res,
   UploadedFile,
@@ -21,12 +22,10 @@ import { Roles } from '../auth/decorators/roles.decorator';
 
 @Controller('files')
 export class FilesController {
-  constructor(
-    private readonly filesService: FilesService,
-  ) {}
+  constructor(private readonly filesService: FilesService) {}
 
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles('client')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('client')
   @Post('upload')
   @UseInterceptors(
     FileInterceptor('file', {
@@ -39,7 +38,8 @@ export class FilesController {
         },
       }),
       fileFilter: (req, file, cb) => {
-        if (!file.mimetype.match(/\.(dxf)$/)) {
+        const ext = extname(file.originalname).toLowerCase();
+        if (ext !== '.dxf') {
           return cb(new Error('Only DXF files are allowed!'), false);
         }
         cb(null, true);
@@ -54,13 +54,16 @@ export class FilesController {
   @Roles('manager')
   @Get(':fileId/download')
   async downloadFile(
-    @Param('fileId') fileId: number,
+    @Param('fileId', ParseIntPipe) fileId: number,
     @Res() res: Response,
   ) {
-    const file =  await this.filesService.findFileById(fileId);
+    const file = await this.filesService.findFileById(fileId);
     if (!file) {
       throw new NotFoundException('File not found');
     }
-    res.download(path.join(__dirname, '..', '..', file.fileUrl), file.originalName);
+    res.download(
+      path.join(__dirname, '..', '..', file.fileUrl),
+      file.originalName,
+    );
   }
 }

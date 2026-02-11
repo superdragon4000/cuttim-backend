@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Equal, Repository } from 'typeorm';
 import File from '../model/file.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -25,7 +25,7 @@ export class FilesService {
     });
   }
 
-  async findFileById(fileId: number): Promise<File | null> {
+  async findFileById(fileId: number): Promise<File> {
     const file = await this.fileRepository.findOneBy({ id: Equal(fileId) });
     if (!file) {
       throw new NotFoundException('Файл не найден');
@@ -55,6 +55,11 @@ export class FilesService {
       if (e.points) {
         points.push(...e.points);
       }
+    }
+    if (!points.length) {
+      throw new BadRequestException(
+        'DXF does not contain supported geometry points for dimension calculation',
+      );
     }
     const minX = Math.min(...points.map((p) => p.x));
     const maxX = Math.max(...points.map((p) => p.x));

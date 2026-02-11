@@ -79,4 +79,17 @@ export class UsersService {
     user.emailVerificationTokenIssuedAt = null;
     await this.usersRepository.save(user);
   }
+
+  async attachPasswordResetToken(userId: number, token: string) {
+    const user = await this.findUserById(userId);
+    user.passwordResetToken = token;
+    user.passwordResetTokenIssuedAt = new Date();
+    await this.usersRepository.save(user);
+  }
+
+  async findOneByResetToken(token: string) {
+    return await this.usersRepository.findOneBy({
+      passwordResetToken: token,
+    });
+  }
 }

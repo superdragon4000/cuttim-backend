@@ -45,6 +45,12 @@ class User extends BaseEntity {
 
   @Column({ type: 'timestamp', nullable: true })
   lastVerificationEmailSentAt: Date | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  passwordResetToken: string | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  passwordResetTokenIssuedAt: Date | null;
 }
 
 export default User;

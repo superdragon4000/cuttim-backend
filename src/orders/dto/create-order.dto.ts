@@ -1,30 +1,11 @@
-import {
-  IsEnum,
-  IsInt,
-  IsOptional,
-  Min,
-  ValidateNested,
-} from 'class-validator';
+import { IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
 import { OrderType } from '../../model/order.entity';
-import { Type } from 'class-transformer';
+import { PreviewOrderDto } from './preview-order.dto';
 
-export class CreateOrderFilesDto {
-  @IsInt()
-  fileId: number;
-
-  @IsInt()
-  materialId: number;
-
-  @IsInt()
-  @Min(1)
-  quantity: number;
-}
-
-export class CreateOrderDto {
-  @ValidateNested({ each: true })
-  @Type(() => CreateOrderFilesDto)
-  files: CreateOrderFilesDto[];
+export class CreateOrderDto extends PreviewOrderDto {
   @IsOptional()
+  @IsString()
+  @MaxLength(1000)
   comment?: string;
 
   @IsEnum(OrderType)

@@ -86,14 +86,6 @@ The architecture follows modular design principles, with clear separation of con
 - Current implementation: **SendGrid provider** for email.
 - Extensible design: new providers can be added without changing business logic.
 
-### Orders (planned features)
-- ❌ **Quote/Preview endpoint**: allow users to preview pricing before confirming an order.
-- ❌ **Shipping address capture**: collect and validate addresses for fulfillment.
-- ❌ **Payment status tracking**: integrate with payment gateway to mark orders as `pending`, `paid`, `failed`.
-- ❌ **Manager order status updates**: managers can update order lifecycle (`fabricated`, `shipped`).
-- ❌ **Tracking number assignment**: link shipment tracking numbers to orders.
-- ❌ **Order timeline/tracking view**: users can see order history and shipment dates.
-
 ---
 
 ## ⚙️ Technical Decisions
@@ -109,13 +101,28 @@ The architecture follows modular design principles, with clear separation of con
 
 ---
 
-## 🚀 Roadmap
-- [ ] Quote/preview endpoint  
-- [ ] Shipping address capture  
-- [ ] Payment status tracking  
-- [ ] Manager order status updates  
-- [ ] Tracking number assignment  
-- [ ] Order timeline/tracking view  
+
+---
+
+## API Updates (2026-02-11)
+
+### Client flow
+- `POST /api/v1/orders/preview` -> quote preview (line items, subtotal, shipping, total).
+- `POST /api/v1/orders/create` -> creates order from files/materials/quantity + shipping payload.
+- `GET /api/v1/orders` -> client cabinet list (own orders).
+- `GET /api/v1/orders/:id` -> client order details with status/payment/tracking/timestamps.
+- `POST /api/v1/payments/create` -> creates YooKassa payment by `orderId` (price taken from order, not from client payload).
+
+### Manager flow
+- `GET /api/v1/orders` -> full order list (supports filters/sorting/pagination, optional `userId` filter).
+- `PATCH /api/v1/orders/:id/status` -> updates order lifecycle status.
+- `PATCH /api/v1/orders/:id/tracking` -> assigns tracking number and shipment timestamp.
+- `PATCH /api/v1/orders/:id/payment-status` -> updates payment state (`pending`, `paid`, `failed`).
+- `GET /api/v1/files/:fileId/download` -> downloads DXF file for production.
+
+### Payment callback
+- `POST /api/v1/payments/webhook/yookassa` -> YooKassa webhook for automatic payment status synchronization.
+- Webhook resolves order by `metadata.orderId` and updates order `paymentStatus` (`paid`/`failed`/`pending`).
 
 ---
 
